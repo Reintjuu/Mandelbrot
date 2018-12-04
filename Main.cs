@@ -30,7 +30,7 @@ namespace Mandelbrot
 			animationTimer = new Timer();
 			animationTimer.Tick += AnimationTimer_Tick;
 			animationTimer.Interval = 1;
-			StartAnimation();
+			//StartAnimation();
 		}
 
 		/// <summary>
@@ -172,8 +172,13 @@ namespace Mandelbrot
 				scale /= 2;
 			}
 
-			centerX += MapRange(e.X, 0, canvas.ClientSize.Width, MIN, MAX) * scale;
-			centerY += MapRange(e.Y, 0, canvas.ClientSize.Height, MIN, MAX) * scale;
+			int height = canvas.ClientSize.Height;
+			int width = canvas.ClientSize.Width;
+			int sizeMin = Math.Min(width, height);
+			double offsetX = (width - sizeMin) / 2d;
+			double offsetY = (height - sizeMin) / 2d;
+			centerX += MapRange(e.X, offsetX, sizeMin + offsetX, MIN, MAX) * scale;
+			centerY += MapRange(e.Y, offsetY, sizeMin + offsetY, MIN, MAX) * scale;
 
 			WriteValuesToUI();
 			DrawMandelbrot();
