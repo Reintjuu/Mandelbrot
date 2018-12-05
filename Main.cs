@@ -14,23 +14,56 @@ namespace Mandelbrot
 		private double centerY;
 		private double scale;
 		private int maxIterations;
+		private Func<int, Color> modifyColor;
+
+		private Preset[] presets = {
+			new Preset
+			{
+				Name = "Default",
+				CenterX = 0,
+				CenterY = 0,
+				Scale = 1,
+				MaxIterations = 100,
+				ModifyColor = (mandelbrot) => Color.White
+			},
+			new Preset
+			{
+				Name = "Deep Ocean",
+				CenterX = -1.12717668726378,
+				CenterY = -0.26968634665177,
+				Scale  = .1,
+				MaxIterations  = 100,
+				ModifyColor = (mandelbrot) => Color.FromArgb(mandelbrot % 128 * 2, mandelbrot % 32 * 7, mandelbrot % 16 * 14)
+			},
+			new Preset
+			{
+				Name = "Black & White",
+				CenterX = 0.349372201726918,
+				CenterY = 0.512074673562276,
+				Scale = .001,
+				MaxIterations = 100,
+				ModifyColor = (mandelbrot) => Color.White
+			}
+		};
 
 		// Initially set to minimized to trigger first maximize button click properly.
 		private FormWindowState lastWindowState = FormWindowState.Minimized;
 		private Timer animationTimer;
+		private int canvasWidth;
+		private int canvasHeight;
 
 		public Main()
 		{
 			InitializeComponent();
-
-			ReadUIValues();
-			// Properly size the PictureBox and draw the first Mandelbrot.
-			ResizeMandelbrot(this);
+			
+			// Add items to the picture box and initialize the first preset.
+			presetsComboBox.Items.AddRange(presets);
+			presetsComboBox.SelectedIndex = 0;
 
 			animationTimer = new Timer();
 			animationTimer.Tick += AnimationTimer_Tick;
 			animationTimer.Interval = 1;
-			//StartAnimation();
+			StartAnimation();
 		}
 
 		/// <summary>
@@ -56,12 +89,13 @@ namespace Mandelbrot
 
 		private void ResizeMandelbrot(object sender)
 		{
-			Control control = (Control) sender;
-			// Calculate the canvas' size to be the size of the Form - the height of the control panel (where the input fields are).
-			canvas.Size = new Size(
-				control.ClientRectangle.Size.Width,
-				control.ClientRectangle.Size.Height - canvas.Location.Y);
+			Control control = (Control)sender;
 
+			// Calculate the canvas' size to be the size of the Form - the height of the control panel (where the input fields are).
+			canvasWidth = control.ClientSize.Width;
+			canvasHeight = control.ClientSize.Height - canvas.Location.Y;
+			canvas.Size = new Size(canvasWidth, canvasHeight);
+			
 			DrawMandelbrot();
 		}
 
@@ -94,7 +128,7 @@ namespace Mandelbrot
 				scale = oldValue;
 			}
 
-			maxIterations = (int) maxInput.Value;
+			maxIterations = (int)maxInput.Value;
 
 			WriteValuesToUI();
 		}
@@ -104,22 +138,21 @@ namespace Mandelbrot
 			centerXTextBox.Text = centerX.ToString(CultureInfo.InvariantCulture);
 			centerYTextBox.Text = centerY.ToString(CultureInfo.InvariantCulture);
 			scaleTextBox.Text = scale.ToString(CultureInfo.InvariantCulture);
+			maxInput.Value = maxIterations;
 		}
 
 		private void DrawMandelbrot()
 		{
-			int height = canvas.ClientSize.Height;
-			int width = canvas.ClientSize.Width;
-			var bitmap = new Bitmap(width, height);
+			var bitmap = new Bitmap(canvasWidth, canvasHeight);
 
 			// Calculate offsets, to always center the Mandelbrot.
-			int sizeMin = Math.Min(width, height);
-			double offsetX = (width - sizeMin) / 2d;
-			double offsetY = (height - sizeMin) / 2d;
+			int sizeMin = Math.Min(canvasWidth, canvasHeight);
+			double offsetX = (canvasWidth - sizeMin) / 2d;
+			double offsetY = (canvasHeight - sizeMin) / 2d;
 
-			for (int y = 0; y < height; y++)
+			for (int y = 0; y < canvasHeight; y++)
 			{
-				for (int x = 0; x < width; x++)
+				for (int x = 0; x < canvasWidth; x++)
 				{
 					double scaledX = MapRange(x, offsetX, sizeMin + offsetX, MIN, MAX) * scale + centerX;
 					double scaledY = MapRange(y, offsetY, sizeMin + offsetY, MIN, MAX) * scale + centerY;
@@ -127,7 +160,7 @@ namespace Mandelbrot
 					int mandelbrot = CalculateMandelbrot(scaledX, scaledY, maxIterations);
 					Color color = mandelbrot == maxIterations || mandelbrot % 2 != 0
 						? Color.Black
-						: Color.FromArgb(mandelbrot % 128 * 2, mandelbrot % 32 * 7, mandelbrot % 16 * 14);
+						: modifyColor(mandelbrot);
 					bitmap.SetPixel(x, y, color);
 				}
 			}
@@ -171,12 +204,10 @@ namespace Mandelbrot
 			{
 				scale /= 2;
 			}
-
-			int height = canvas.ClientSize.Height;
-			int width = canvas.ClientSize.Width;
-			int sizeMin = Math.Min(width, height);
-			double offsetX = (width - sizeMin) / 2d;
-			double offsetY = (height - sizeMin) / 2d;
+			
+			int sizeMin = Math.Min(canvasWidth, canvasHeight);
+			double offsetX = (canvasWidth - sizeMin) / 2d;
+			double offsetY = (canvasHeight - sizeMin) / 2d;
 			centerX += MapRange(e.X, offsetX, sizeMin + offsetX, MIN, MAX) * scale;
 			centerY += MapRange(e.Y, offsetY, sizeMin + offsetY, MIN, MAX) * scale;
 
@@ -198,6 +229,26 @@ namespace Mandelbrot
 			scale /= 1.01;
 			WriteValuesToUI();
 			DrawMandelbrot();
+		}
+
+		private void PresetsComboBox_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if (presetsComboBox.SelectedIndex == -1)
+			{
+				return;
+			}
+
+			Preset currentPreset = (Preset)presetsComboBox.SelectedItem;
+			centerX = currentPreset.CenterX;
+			centerY = currentPreset.CenterY;
+			scale = currentPreset.Scale;
+			maxIterations = currentPreset.MaxIterations;
+			modifyColor = currentPreset.ModifyColor;
+
+			WriteValuesToUI();
+
+			// Use the resize method instead to make sure the canvas is getting the correct sizes the first time.
+			ResizeMandelbrot(this);
 		}
 	}
 }

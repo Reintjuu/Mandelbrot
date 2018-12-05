@@ -38,6 +38,8 @@
 			this.okButton = new System.Windows.Forms.Button();
 			this.maxInput = new System.Windows.Forms.NumericUpDown();
 			this.scaleTextBox = new System.Windows.Forms.TextBox();
+			this.presetsComboBox = new System.Windows.Forms.ComboBox();
+			this.presetLabel = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this.canvas)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.maxInput)).BeginInit();
 			this.SuspendLayout();
@@ -46,7 +48,7 @@
 			// 
 			this.canvas.Location = new System.Drawing.Point(0, 66);
 			this.canvas.Name = "canvas";
-			this.canvas.Size = new System.Drawing.Size(400, 400);
+			this.canvas.Size = new System.Drawing.Size(533, 400);
 			this.canvas.TabIndex = 0;
 			this.canvas.TabStop = false;
 			this.canvas.MouseClick += new System.Windows.Forms.MouseEventHandler(this.Canvas_MouseClick);
@@ -138,11 +140,32 @@
 			this.scaleTextBox.TabIndex = 6;
 			this.scaleTextBox.Text = "1";
 			// 
+			// presetsComboBox
+			// 
+			this.presetsComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.presetsComboBox.FormattingEnabled = true;
+			this.presetsComboBox.Location = new System.Drawing.Point(400, 38);
+			this.presetsComboBox.Name = "presetsComboBox";
+			this.presetsComboBox.Size = new System.Drawing.Size(121, 21);
+			this.presetsComboBox.TabIndex = 10;
+			this.presetsComboBox.SelectedIndexChanged += new System.EventHandler(this.PresetsComboBox_SelectedIndexChanged);
+			// 
+			// presetLabel
+			// 
+			this.presetLabel.AutoSize = true;
+			this.presetLabel.Location = new System.Drawing.Point(349, 41);
+			this.presetLabel.Name = "presetLabel";
+			this.presetLabel.Size = new System.Drawing.Size(40, 13);
+			this.presetLabel.TabIndex = 11;
+			this.presetLabel.Text = "Preset:";
+			// 
 			// Main
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(401, 467);
+			this.ClientSize = new System.Drawing.Size(533, 467);
+			this.Controls.Add(this.presetLabel);
+			this.Controls.Add(this.presetsComboBox);
 			this.Controls.Add(this.maxInput);
 			this.Controls.Add(this.okButton);
 			this.Controls.Add(this.maxLabel);
@@ -176,6 +199,8 @@
 		private System.Windows.Forms.Button okButton;
 		private System.Windows.Forms.NumericUpDown maxInput;
 		private System.Windows.Forms.TextBox scaleTextBox;
+		private System.Windows.Forms.ComboBox presetsComboBox;
+		private System.Windows.Forms.Label presetLabel;
 	}
 }
 
