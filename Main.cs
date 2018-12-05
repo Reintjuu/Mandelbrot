@@ -12,9 +12,16 @@ namespace Mandelbrot
 
 		private double centerX;
 		private double centerY;
+
+		// In my case, the scale is actually independent of the canvas' size, because the application is responsive.
+		// Because I wanted consistent values for each screen size, scale 1 shows the full range from MIN to MAX,
+		// instead of the 0.01 in the assignment description.
 		private double scale;
 		private int maxIterations;
-		private Func<int, Color> modifyColor;
+
+		// The function delegate to calculate the color based on the Mandelbrot value, this
+		// represents the current delegate and can be overwritten by the given presets.
+		private Func<int, int, Color> modifyColor;
 
 		private Preset[] presets = {
 			new Preset
@@ -24,7 +31,6 @@ namespace Mandelbrot
 				CenterY = 0,
 				Scale = 1,
 				MaxIterations = 100,
-				ModifyColor = (mandelbrot) => Color.White
 			},
 			new Preset
 			{
@@ -33,17 +39,29 @@ namespace Mandelbrot
 				CenterY = -0.26968634665177,
 				Scale  = .1,
 				MaxIterations  = 100,
-				ModifyColor = (mandelbrot) => Color.FromArgb(mandelbrot % 128 * 2, mandelbrot % 32 * 7, mandelbrot % 16 * 14)
+				ModifyColor = (mandelbrot, maxIterations) => mandelbrot == maxIterations || mandelbrot % 2 != 0 ? Color.Black : Color.FromArgb(mandelbrot % 128 * 2, mandelbrot % 32 * 7, mandelbrot % 16 * 14)
 			},
 			new Preset
 			{
 				Name = "Black & White",
 				CenterX = 0.349372201726918,
 				CenterY = 0.512074673562276,
+				// Ook vet:
+				// -0.545459469096025
+				// -0.600961486038721
 				Scale = .001,
 				MaxIterations = 100,
-				ModifyColor = (mandelbrot) => Color.White
-			}
+				ModifyColor = (mandelbrot, maxIterations) => mandelbrot == maxIterations || mandelbrot % 2 != 0 ? Color.White : Color.Black
+			},
+			new Preset
+			{
+				Name = "Deep Ocean",
+				CenterX = -1.12717668726378,
+				CenterY = -0.26968634665177,
+				Scale  = .1,
+				MaxIterations  = 100,
+				ModifyColor = (mandelbrot, maxIterations) => Color.FromArgb(mandelbrot % 128 * 2, mandelbrot % 32 * 7, mandelbrot % 16 * 14)
+			},
 		};
 
 		// Initially set to minimized to trigger first maximize button click properly.
@@ -55,15 +73,19 @@ namespace Mandelbrot
 		public Main()
 		{
 			InitializeComponent();
-			
+			// "Click" OK on hitting Enter as well.
+			AcceptButton = okButton;
+
 			// Add items to the picture box and initialize the first preset.
 			presetsComboBox.Items.AddRange(presets);
 			presetsComboBox.SelectedIndex = 0;
 
+			// Initialise the animator, it will update as fast as possible with an
+			// interval of 1 ms, if one of the threads on the CPU can handle that,
+			// since the Mandelbrot calculation is not multi-threaded.
 			animationTimer = new Timer();
 			animationTimer.Tick += AnimationTimer_Tick;
 			animationTimer.Interval = 1;
-			StartAnimation();
 		}
 
 		/// <summary>
@@ -95,7 +117,7 @@ namespace Mandelbrot
 			canvasWidth = control.ClientSize.Width;
 			canvasHeight = control.ClientSize.Height - canvas.Location.Y;
 			canvas.Size = new Size(canvasWidth, canvasHeight);
-			
+
 			DrawMandelbrot();
 		}
 
@@ -158,9 +180,7 @@ namespace Mandelbrot
 					double scaledY = MapRange(y, offsetY, sizeMin + offsetY, MIN, MAX) * scale + centerY;
 
 					int mandelbrot = CalculateMandelbrot(scaledX, scaledY, maxIterations);
-					Color color = mandelbrot == maxIterations || mandelbrot % 2 != 0
-						? Color.Black
-						: modifyColor(mandelbrot);
+					Color color = modifyColor(mandelbrot, maxIterations);
 					bitmap.SetPixel(x, y, color);
 				}
 			}
@@ -204,7 +224,7 @@ namespace Mandelbrot
 			{
 				scale /= 2;
 			}
-			
+
 			int sizeMin = Math.Min(canvasWidth, canvasHeight);
 			double offsetX = (canvasWidth - sizeMin) / 2d;
 			double offsetY = (canvasHeight - sizeMin) / 2d;
@@ -213,15 +233,6 @@ namespace Mandelbrot
 
 			WriteValuesToUI();
 			DrawMandelbrot();
-		}
-
-		private void StartAnimation()
-		{
-			centerX = -1.12717668726378;
-			centerY = -0.26968634665177;
-			centerX = 0.349372201726918;
-			centerY = 0.512074673562276;
-			animationTimer.Start();
 		}
 
 		private void AnimationTimer_Tick(object sender, EventArgs e)
@@ -249,6 +260,30 @@ namespace Mandelbrot
 
 			// Use the resize method instead to make sure the canvas is getting the correct sizes the first time.
 			ResizeMandelbrot(this);
+		}
+
+		private bool runningAnimation = false;
+
+		private void AnimationButton_Click(object sender, EventArgs e)
+		{
+			runningAnimation = !runningAnimation;
+
+			if (runningAnimation)
+			{
+				animationButton.Text = "Stop Animation";
+				centerX = -1.12717668726378;
+				centerY = -0.26968634665177;
+				centerX = 0.349372201726918;
+				centerY = 0.512074673562276;
+				animationTimer.Start();
+			}
+			else
+			{
+				animationButton.Text = "Start Animation";
+				animationTimer.Stop();
+			}
+
+			animationButton.Text += " (CPU intensive)";
 		}
 	}
 }

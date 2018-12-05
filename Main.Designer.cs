@@ -40,6 +40,7 @@
 			this.scaleTextBox = new System.Windows.Forms.TextBox();
 			this.presetsComboBox = new System.Windows.Forms.ComboBox();
 			this.presetLabel = new System.Windows.Forms.Label();
+			this.animationButton = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this.canvas)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.maxInput)).BeginInit();
 			this.SuspendLayout();
@@ -159,11 +160,22 @@
 			this.presetLabel.TabIndex = 11;
 			this.presetLabel.Text = "Preset:";
 			// 
+			// animationButton
+			// 
+			this.animationButton.Location = new System.Drawing.Point(352, 12);
+			this.animationButton.Name = "animationButton";
+			this.animationButton.Size = new System.Drawing.Size(169, 23);
+			this.animationButton.TabIndex = 12;
+			this.animationButton.Text = "Start Animation (CPU intensive)";
+			this.animationButton.UseVisualStyleBackColor = true;
+			this.animationButton.Click += new System.EventHandler(this.AnimationButton_Click);
+			// 
 			// Main
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(533, 467);
+			this.Controls.Add(this.animationButton);
 			this.Controls.Add(this.presetLabel);
 			this.Controls.Add(this.presetsComboBox);
 			this.Controls.Add(this.maxInput);
@@ -201,6 +213,7 @@
 		private System.Windows.Forms.TextBox scaleTextBox;
 		private System.Windows.Forms.ComboBox presetsComboBox;
 		private System.Windows.Forms.Label presetLabel;
+		private System.Windows.Forms.Button animationButton;
 	}
 }
 

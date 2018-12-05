@@ -14,7 +14,8 @@ namespace Mandelbrot
 		public double CenterY { get; set; }
 		public double Scale { get; set; }
 		public int MaxIterations { get; set; }
-		public Func<int, Color> ModifyColor { get; set; }
+		public Func<int, int, Color> ModifyColor { get; set; } =
+			(mandelbrot, maxIterations) => mandelbrot == maxIterations || mandelbrot % 2 != 0 ? Color.Black : Color.White;
 
 		public override string ToString()
 		{
