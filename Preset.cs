@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Drawing;
 
 namespace Mandelbrot
 {
+	public delegate Color ModifyColor(int mandelbrot, int maxIterations);
+
 	public class Preset
 	{
 		public string Name { get; set; }
@@ -14,9 +11,15 @@ namespace Mandelbrot
 		public double CenterY { get; set; }
 		public double Scale { get; set; }
 		public int MaxIterations { get; set; }
-		public Func<int, int, Color> ModifyColor { get; set; } =
-			(mandelbrot, maxIterations) => mandelbrot == maxIterations || mandelbrot % 2 != 0 ? Color.Black : Color.White;
 
+		// The default color modifying function is saved here, that way there is no need to
+		// provide a ModifyColor function by creating a preset every single time.
+		public ModifyColor ModifyColor { get; set; } = (mandelbrot, maxIterations) =>
+			mandelbrot == maxIterations || mandelbrot % 2 != 0
+				? Color.Black
+				: Color.White;
+
+		// This will be showed in the UI.
 		public override string ToString()
 		{
 			return Name;
